@@ -28,5 +28,24 @@ organization-information-fetcher = "organization_information_fetcher_app:main"
 
 [dependency-groups]
 dev = [
+    "black>=25.1.0",
+    "flake8>=7.1.2",
     "pytest>=8.3.5",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
+[tool.flake8]
+max-line-length = 88
+
+[tool.isort]
+profile = "black"
