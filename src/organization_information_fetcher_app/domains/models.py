@@ -2,7 +2,7 @@ from datetime import date
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 
 class EmployeeRange(str, Enum):
@@ -41,7 +41,7 @@ class RawOrganization(BaseModel):
 
 class Organization(BaseModel):
     company_name: str
-    creation_date: date
+    creation_date: Optional[date]
     employees: EmployeeRange
     economic_activity_raw: str
     economic_activity: Industry

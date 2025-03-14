@@ -13,10 +13,11 @@ class SinkerCsv(Sinker):
     def sink(self, data: Iterable[BaseModel]) -> None:
         with open(self.file_path, mode="w") as file:
             writer = csv.DictWriter(
-                file, fieldnames=self._get_keys(Stream(data).first())
+                file, fieldnames=self._get_keys(list(data)[0].model_dump())
             )
             writer.writeheader()
             writer.writerows(Stream(data).map(lambda x: x.dict()))
 
-    def _get_keys(self, param: dict) -> List[str]:
-        pass
+    @staticmethod
+    def _get_keys(param: dict) -> List[str]:
+        return list(param.keys())

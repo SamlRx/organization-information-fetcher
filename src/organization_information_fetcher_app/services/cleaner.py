@@ -1,8 +1,13 @@
 from typing import Iterable, List
 
 import dateparser
-from domains.models import (EmployeeRange, Industry, Organization, Product,
-                            RawOrganization)
+from domains.models import (
+    EmployeeRange,
+    Industry,
+    Organization,
+    Product,
+    RawOrganization,
+)
 from ports.referential import Referential
 from streamable import Stream
 
@@ -61,9 +66,11 @@ class Cleaner:
     def serialize_to_organization(
         self, raw_organization: RawOrganization
     ) -> Organization:
+        parsed_date = dateparser.parse(raw_organization.creation_date)
+
         return Organization(
             company_name=raw_organization.company_name,
-            creation_date=dateparser.parse(raw_organization.creation_date).date(),
+            creation_date=parsed_date.date() if parsed_date else None,
             employees=self._enrich_employee(raw_organization.employees),
             economic_activity_raw=raw_organization.economic_activity,
             economic_activity=self._get_economic_activity(

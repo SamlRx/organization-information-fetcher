@@ -16,6 +16,7 @@ dependencies = [
     "langchain-mistralai>=0.2.7",
     "mistralai>=1.5.1",
     "pandas>=2.2.3",
+    "pip>=25.0.1",
     "pydantic>=2.10.6",
     "python-dotenv>=1.0.1",
     "scikit-learn>=1.6.1",
@@ -30,7 +31,11 @@ organization-information-fetcher = "organization_information_fetcher_app:main"
 dev = [
     "black>=25.1.0",
     "flake8>=7.1.2",
+    "flake8-pyproject>=1.2.3",
+    "mypy>=1.15.0",
     "pytest>=8.3.5",
+    "types-dateparser>=1.2.0.20250208",
+    "types-requests>=2.32.0.20250306",
 ]
 
 [tool.black]
@@ -44,8 +49,15 @@ exclude = '''
   | dist
 )/
 '''
+
 [tool.flake8]
 max-line-length = 88
+extend-ignore = ["E203", "W503", "E501"]
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+explicit_package_bases = true
+ignore_missing_imports = true
+mypy_path = "src"

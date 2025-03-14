@@ -10,10 +10,11 @@ repos:
     rev: 24.10.0
     hooks:
       - id: black
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
     hooks:
       - id: flake8
+        additional_dependencies: [Flake8-pyproject]
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.10.1
     hooks:
@@ -22,3 +23,4 @@ repos:
     rev: v1.5.1
     hooks:
       - id: mypy
+        additional_dependencies: ["types-requests", "types-dateparser"]

@@ -102,7 +102,7 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
             raise ValueError("Rate limiter must be set before initializing LLM.")
 
         self._llm = ChatMistralAI(
-            model="mistral-small-2501", temperature=0.1, rate_limiter=self._rate_limiter
+            model="mistral-small-2501", temperature=0.1, rate_limiter=self._rate_limiter  # type: ignore
         )
         return self
 
@@ -113,7 +113,7 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
             response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
             return response.text
         except requests.exceptions.RequestException as e:
-            return f"Error retrieving page: {e}"
+            raise ValueError(f"Error retrieving {url}.", e)
 
     @staticmethod
     def parse_page(html: str) -> str:
@@ -121,7 +121,7 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
             soup = BeautifulSoup(html, "html.parser")
             return soup.get_text()
         except Exception as e:
-            return f"Error parsing page: {e}"
+            raise ValueError("Error parsing.", e)
 
     @staticmethod
     def search_company(company_name: str) -> list[str]:
@@ -129,7 +129,7 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
             print(f"Searching for company: {company_name}")
             return next(search(company_name))
         except Exception as e:
-            return f"Error searching for company: {e}"
+            raise ValueError(f"Error searching for company {company_name}.", e)
 
     def build(self) -> RawOrganizationFetcherFromCompanyName:
         if not self._llm:
