@@ -1,6 +1,8 @@
 import os
 
-from adaptors.fetching_domain import RawOrganizationFetcherFromCompanyNameBuilder
+from adaptors.fetching_domain_langchain import (
+    RawOrganizationFetcherFromCompanyNameBuilder,
+)
 from dotenv import load_dotenv
 from repository.referential_csv import CsvReferentialBuilder
 from services.cleaner import Cleaner
