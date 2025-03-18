@@ -5,6 +5,7 @@ description = "Project to retrieve information about an organization"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "beautifulsoup4>=4.13.3",
     "bs4>=0.0.2",
     "crewai>=0.105.0",
     "dateparser>=1.2.1",

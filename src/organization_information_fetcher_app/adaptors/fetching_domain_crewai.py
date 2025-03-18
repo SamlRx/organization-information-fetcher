@@ -1,8 +1,9 @@
 import logging
+from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
-from crewai import LLM, Agent, Crew, Process, Task
+from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai.tools import tool
 from domains.models import RawOrganization
@@ -51,7 +52,7 @@ class _FetchingDomainCrew:
             role="research assistant",
             backstory="You are an helpful research assistant. You have been tasked with compiling information about a company. ",
             goal="You will diligently search for information the best you can.",
-            llm=LLM(model="ollama/llama3.2", base_url="http://localhost:11434"),
+            llm="mistral/mistral-tiny",
             max_rpm=60,
             max_execution_time=30,
             tools=[
@@ -101,8 +102,8 @@ class _FetchingDomainCrew:
 
 class FetchingDomainCrewAI(RawOrganizationFetcher):
 
-    def __init__(self, fetching_crew: Crew = _FetchingDomainCrew.crew()) -> None:
-        self._crew = fetching_crew
+    def __init__(self, fetching_crew: Optional[Crew]) -> None:
+        self._crew = fetching_crew or _FetchingDomainCrew().crew()
 
     def fetch(self, value: str) -> RawOrganization:
         if result := self._crew.kickoff({"company_name": value}).pydantic:

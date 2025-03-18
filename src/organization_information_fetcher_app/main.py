@@ -1,6 +1,6 @@
 import os
 
-from adaptors.fetching_domain_crewai import FetchingDomainCrewAI
+from adaptors.fetching_domain import RawOrganizationFetcherFromCompanyNameBuilder
 from dotenv import load_dotenv
 from repository.referential_csv import CsvReferentialBuilder
 from services.cleaner import Cleaner
@@ -17,7 +17,12 @@ def main():
 
     cleaner = Cleaner(cpc_referential, isic_referential)
 
-    fetcher = FetchingDomainCrewAI()
+    fetcher = (
+        RawOrganizationFetcherFromCompanyNameBuilder()
+        .with_standard_rate_limiter()
+        .with_mistral_ai()
+        .build()
+    )
 
     company_name = "Hubspot"
     raw_organization = fetcher.fetch(company_name)
