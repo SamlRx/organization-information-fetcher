@@ -55,8 +55,7 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
     @staticmethod
     def search_company(company_name: str) -> list[str]:
         try:
-            print(f"Searching for company: {company_name}")
-            return next(search(company_name))
+            return list(search(company_name))
         except Exception as e:
             raise ValueError(f"Error searching for company {company_name}.", e)
 
