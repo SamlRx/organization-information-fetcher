@@ -1,11 +1,21 @@
+import csv
 import os
+from typing import Iterator
 
 from adaptors.fetching_domain_langchain import (
     RawOrganizationFetcherFromCompanyNameBuilder,
 )
 from dotenv import load_dotenv
 from repository.referential_csv import CsvReferentialBuilder
+from repository.sinker_csv import SinkerCsv
 from services.cleaner import Cleaner
+from streamable import Stream
+
+
+def companies(path: str) -> Iterator[str]:
+    with open(path, newline="", encoding="utf-8") as file:
+        for row in csv.reader(file):
+            yield row[0]
 
 
 def main():
@@ -17,6 +27,8 @@ def main():
     cpc_referential = CsvReferentialBuilder.build("resources/cpc_ver3.csv")
     isic_referential = CsvReferentialBuilder.build("resources/isic_rev5.csv")
 
+    # Load the company_names
+
     cleaner = Cleaner(cpc_referential, isic_referential)
 
     fetcher = (
@@ -26,11 +38,16 @@ def main():
         .build()
     )
 
-    company_name = "Hubspot"
-    raw_organization = fetcher.fetch(company_name)
-    cleaned_data = cleaner.serialize_to_organization(raw_organization)
+    sinker = SinkerCsv("./organizations.csv")
 
-    print(cleaned_data)
+    list(
+        Stream(list(companies("resources/company_names.csv")))
+        .map(fetcher.fetch)
+        .map(cleaner.serialize_to_organization)
+        .map(sinker.sink)
+    )
+
+    sinker.flush()
 
 
 if __name__ == "__main__":

@@ -19,11 +19,16 @@ _LOGGER = logging.getLogger(__name__)
 class RawOrganizationFetcherFromCompanyNameBuilder:
     _llm: Optional[BaseChatModel] = None
     _rate_limiter: Optional[InMemoryRateLimiter] = None
+    _is_verbose: bool = False
 
     def with_standard_rate_limiter(self) -> Self:
         self._rate_limiter = InMemoryRateLimiter(
             requests_per_second=0.5, check_every_n_seconds=0.1
         )
+        return self
+
+    def with_verbose(self) -> Self:
+        self._is_verbose = True
         return self
 
     def with_mistral_ai(self) -> Self:
@@ -95,6 +100,10 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
             ]
         )
 
+        _LOGGER.debug(
+            "Building RawOrganizationFetcherFromCompanyName with options %s", self
+        )
+
         return RawOrganizationFetcherFromCompanyName(
             initialize_agent(
                 llm=self._llm,
@@ -102,7 +111,7 @@ class RawOrganizationFetcherFromCompanyNameBuilder:
                 tools=[search_tool, page_retriever, page_parser],
                 prompt=prompt,
                 handle_parsing_errors=True,
-                verbose=True,
+                verbose=self._is_verbose,
             ),
             llm=self._llm,
         )
@@ -124,7 +133,7 @@ class RawOrganizationFetcherFromCompanyName(RawOrganizationFetcher):
 
     def _format_result(self, raw_value: Dict[str, Any]) -> Dict | RawOrganization:
         return self._llm.with_structured_output(RawOrganization).invoke(
-            f"Extract and structure the following company data: {raw_value.get("properties")}"
+            f"Extract and structure the following company data: {raw_value.get("output")}"
         )
 
     @classmethod
@@ -141,8 +150,8 @@ class RawOrganizationFetcherFromCompanyName(RawOrganizationFetcher):
     def fetch(self, value: str) -> RawOrganization:
         initial_prompt = f"""
             Compile company information for {value} by crawling the web using the following search query: "{value} company information".
-            Use all the pages to compile the most complete information possible for this object: {RawOrganization.model_json_schema()}.
-            If they are still incomplete you will search for "{value} and the missing information" to find the missing information and compile it with the previous result.
+            Compile and compare the information across the pages the most complete information possible.
+            Output the retrieve values in JSON using this schema this object: {RawOrganization.model_json_schema()}
         """
 
         raw_result = self._agent.invoke({"input": initial_prompt})
