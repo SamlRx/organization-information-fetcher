@@ -1,7 +1,7 @@
 import csv
 from typing import List
 
-from ports.sinker import Sinker
+from core.ports.sinker import Sinker
 from pydantic import BaseModel
 
 
@@ -11,7 +11,11 @@ class SinkerCsv(Sinker):
         self._batch_size = batch_size
         self._buffer: List[BaseModel] = []
 
-    def sink(self, data: BaseModel) -> None:
+    def __del__(self) -> None:
+        # Flush remaining data before deleting the object
+        self._flush()
+
+    def sink_organization(self, data: BaseModel) -> None:
         self._buffer.append(data)
 
         if len(self._buffer) >= self._batch_size:
@@ -32,9 +36,6 @@ class SinkerCsv(Sinker):
             writer.writerows([record.model_dump() for record in self._buffer])
 
         self._buffer.clear()
-
-    def flush(self) -> None:
-        self._flush()
 
     @staticmethod
     def _get_keys(param: dict) -> List[str]:

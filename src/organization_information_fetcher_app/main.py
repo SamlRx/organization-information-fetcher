@@ -2,14 +2,14 @@ import csv
 import os
 from typing import Iterator
 
-from adaptors.fetching_domain_langchain import (
+from core.application import InformationFetcher
+from core.domains.cleaner import Cleaner
+from dotenv import load_dotenv
+from infrastructure.adapters.fetching_agent import (
     RawOrganizationFetcherFromCompanyNameBuilder,
 )
-from dotenv import load_dotenv
-from repository.referential_csv import CsvReferentialBuilder
-from repository.sinker_csv import SinkerCsv
-from services.cleaner import Cleaner
-from streamable import Stream
+from infrastructure.repositories.referential_csv import CsvReferentialBuilder
+from infrastructure.repositories.sinker_csv import SinkerCsv
 
 
 def companies(path: str) -> Iterator[str]:
@@ -28,26 +28,17 @@ def main():
     isic_referential = CsvReferentialBuilder.build("resources/isic_rev5.csv")
 
     # Load the company_names
-
     cleaner = Cleaner(cpc_referential, isic_referential)
-
     fetcher = (
         RawOrganizationFetcherFromCompanyNameBuilder()
         .with_standard_rate_limiter()
         .with_mistral_ai()
         .build()
     )
-
     sinker = SinkerCsv("./organizations.csv")
 
-    list(
-        Stream(list(companies("resources/company_names.csv")))
-        .map(fetcher.fetch)
-        .map(cleaner.serialize_to_organization)
-        .map(sinker.sink)
-    )
-
-    sinker.flush()
+    # Run the application
+    InformationFetcher(fetcher, cleaner, sinker)(companies("resources/companies.csv"))
 
 
 if __name__ == "__main__":

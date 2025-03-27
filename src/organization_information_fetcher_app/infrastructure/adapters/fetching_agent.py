@@ -3,7 +3,8 @@ from typing import Any, Dict, Iterable, Optional, Self
 
 import requests
 from bs4 import BeautifulSoup
-from domains.models import RawOrganization
+from core.entities.organizations import RawOrganization
+from core.ports.fetching import RawOrganizationFetcher
 from googlesearch import search
 from langchain.agents import AgentExecutor, AgentType, initialize_agent
 from langchain.tools import Tool
@@ -11,7 +12,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain_mistralai import ChatMistralAI
-from ports.fetching import RawOrganizationFetcher
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ class RawOrganizationFetcherFromCompanyName(RawOrganizationFetcher):
         actual_keys = set(raw_result.get("properties", {}).keys())
         return expected_keys - actual_keys
 
-    def fetch(self, value: str) -> RawOrganization:
+    def get_raw_organization_information(self, value: str) -> RawOrganization:
         initial_prompt = f"""
             Compile company information for {value} by crawling the web using the following search query: "{value} company information".
             Compile and compare the information across the pages the most complete information possible.

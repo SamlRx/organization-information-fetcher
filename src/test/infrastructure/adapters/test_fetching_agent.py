@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from adaptors.fetching_domain_langchain import (
+from core.entities.organizations import RawOrganization
+from infrastructure.adapters.fetching_agent import (
     RawOrganizationFetcherFromCompanyName,
     RawOrganizationFetcherFromCompanyNameBuilder,
 )
-from domains.models import RawOrganization
 
 
 def test_with_standard_rate_limiter() -> None:
@@ -79,7 +79,9 @@ def test_search_company_success() -> None:
         "http://linkedin.com/testcompany",
     ]
 
-    with patch("adaptors.fetching_domain_langchain.search", return_value=mock_results):
+    with patch(
+        "infrastructure.adapters.fetching_agent.search", return_value=mock_results
+    ):
         # When calling search_company
         result: List[str] = RawOrganizationFetcherFromCompanyNameBuilder.search_company(
             company_name
@@ -92,7 +94,7 @@ def test_search_company_success() -> None:
 def test_search_company_failure() -> None:
     # Given a company name that causes an exception
     with patch(
-        "adaptors.fetching_domain_langchain.search",
+        "infrastructure.adapters.fetching_agent.search",
         side_effect=Exception("Search error"),
     ):
         # When calling search_company, Then it should raise a ValueError
@@ -111,7 +113,7 @@ def test_fetch_incomplete_result() -> None:
     llm_mock.with_structured_output.return_value.invoke.return_value = RawOrganization(
         company_name="Test Corp",
         creation_date="2021-01-01",
-        employees="2 - 10 employees",
+        employees=20,
         economic_activity="Software development",
         products=["A", "B"],
         product_names=["Product A", "Product B"],
@@ -123,13 +125,13 @@ def test_fetch_incomplete_result() -> None:
     fetcher = RawOrganizationFetcherFromCompanyName(agent_mock, llm_mock)
 
     # When calling fetch
-    result: RawOrganization = fetcher.fetch("Test Corp")
+    result: RawOrganization = fetcher.get_raw_organization_information("Test Corp")
 
     # Then it should return a structured RawOrganization object
     assert isinstance(result, RawOrganization)
     assert result.company_name == "Test Corp"
     assert result.creation_date == "2021-01-01"
-    assert result.employees == "2 - 10 employees"
+    assert result.employees == 20
     assert result.economic_activity == "Software development"
     assert result.products == ["A", "B"]
     assert result.product_names == ["Product A", "Product B"]

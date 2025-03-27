@@ -4,7 +4,7 @@ from typing import Callable
 
 import numpy as np
 import pandas as pd
-from ports.referential import Referential
+from core.ports.referential import Referential
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 

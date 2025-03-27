@@ -1,14 +1,14 @@
 from typing import Iterable, List
 
 import dateparser
-from domains.models import (
+from core.entities.organizations import (
     EmployeeRange,
     Industry,
     Organization,
     Product,
     RawOrganization,
 )
-from ports.referential import Referential
+from core.ports.referential import Referential
 from streamable import Stream
 
 
